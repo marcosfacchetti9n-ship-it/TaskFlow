@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager Control Center</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="shell">
+    <aside class="sidebar">
+        <div class="brand">
+            <span class="brand-mark">TM</span>
+            <div>
+                <p class="eyebrow">Task Control</p>
+                <h1>Ops board</h1>
+            </div>
+        </div>
+
+        <section class="sidebar-card">
+            <p class="card-label">Estado de sesion</p>
+            <strong id="sessionStatus">Sin sesion iniciada</strong>
+            <p id="sessionUser" class="muted">No hay usuario autenticado.</p>
+            <div class="session-actions">
+                <button id="logoutButton" class="secondary-button" type="button">Cerrar sesion</button>
+                <button id="refreshTasksButton" class="secondary-button" type="button">Sincronizar</button>
+            </div>
+        </section>
+
+        <section class="sidebar-card">
+            <div class="panel-title-row">
+                <div>
+                    <p class="card-label">Cuenta</p>
+                    <h2>Acceso rapido</h2>
+                </div>
+                <span class="tiny-badge">JWT</span>
+            </div>
+
+            <form id="registerForm" class="form-stack compact-form">
+                <h3>Registro</h3>
+                <label>
+                    Nombre
+                    <input type="text" name="name" placeholder="Marco" required>
+                </label>
+                <label>
+                    Email
+                    <input type="email" name="email" placeholder="marco@example.com" required>
+                </label>
+                <label>
+                    Password
+                    <input type="password" name="password" placeholder="Minimo 6 caracteres" required>
+                </label>
+                <button type="submit">Crear cuenta</button>
+            </form>
+
+            <div class="form-divider"></div>
+
+            <form id="loginForm" class="form-stack compact-form">
+                <h3>Login</h3>
+                <label>
+                    Email
+                    <input type="email" name="email" placeholder="marco@example.com" required>
+                </label>
+                <label>
+                    Password
+                    <input type="password" name="password" placeholder="Tu password" required>
+                </label>
+                <button type="submit">Ingresar</button>
+            </form>
+        </section>
+    </aside>
+
+    <main class="workspace">
+        <section class="hero-panel">
+            <div class="hero-copy">
+                <p class="eyebrow">Spring Boot + PostgreSQL + JWT</p>
+                <h2>Una cabina mas seria para testear tu task manager</h2>
+                <p>
+                    Esta interfaz consume la API real del proyecto, mantiene la sesion con JWT
+                    y te deja explorar tus tareas con filtros, indicadores y edicion rapida.
+                </p>
+            </div>
+            <div class="hero-orbit">
+                <div class="orbit-ring orbit-ring-lg"></div>
+                <div class="orbit-ring orbit-ring-md"></div>
+                <div class="orbit-core">
+                    <span id="heroCount">0</span>
+                    <small>tareas visibles</small>
+                </div>
+            </div>
+        </section>
+
+        <section class="stats-grid">
+            <article class="stat-card accent">
+                <p>Total</p>
+                <strong id="totalTasks">0</strong>
+                <span>Tareas registradas</span>
+            </article>
+            <article class="stat-card warm">
+                <p>Pendientes</p>
+                <strong id="pendingTasks">0</strong>
+                <span>Esperando atencion</span>
+            </article>
+            <article class="stat-card cold">
+                <p>En progreso</p>
+                <strong id="progressTasks">0</strong>
+                <span>Trabajo en curso</span>
+            </article>
+            <article class="stat-card success">
+                <p>Completadas</p>
+                <strong id="completedTasks">0</strong>
+                <span>Trabajo resuelto</span>
+            </article>
+        </section>
+
+        <section class="content-grid">
+            <article class="panel composer-panel">
+                <div class="panel-title-row">
+                    <div>
+                        <p class="card-label">Composer</p>
+                        <h2 id="editorTitle">Nueva tarea</h2>
+                    </div>
+                    <span id="editorMode" class="tiny-badge">Modo creacion</span>
+                </div>
+                <form id="taskForm" class="task-form">
+                    <input type="hidden" name="taskId">
+                    <label>
+                        Titulo
+                        <input type="text" name="title" placeholder="Preparar demo para cliente" required>
+                    </label>
+                    <label>
+                        Estado
+                        <select name="status" required>
+                            <option value="PENDING">PENDING</option>
+                            <option value="IN_PROGRESS">IN_PROGRESS</option>
+                            <option value="COMPLETED">COMPLETED</option>
+                        </select>
+                    </label>
+                    <label class="wide">
+                        Descripcion
+                        <textarea name="description" rows="6" placeholder="Contexto, dependencias y detalles utiles"></textarea>
+                    </label>
+                    <label>
+                        Fecha limite
+                        <input type="date" name="dueDate">
+                    </label>
+                    <div class="form-actions wide">
+                        <button type="submit">Guardar tarea</button>
+                        <button id="cancelEditButton" class="secondary-button" type="button">Limpiar editor</button>
+                    </div>
+                </form>
+            </article>
+
+            <article class="panel inspector-panel">
+                <div class="panel-title-row">
+                    <div>
+                        <p class="card-label">Inspector</p>
+                        <h2>Filtros</h2>
+                    </div>
+                    <span class="tiny-badge">Live</span>
+                </div>
+
+                <div class="filter-stack">
+                    <label>
+                        Buscar
+                        <input id="searchInput" type="search" placeholder="Titulo o descripcion">
+                    </label>
+                    <label>
+                        Estado
+                        <select id="statusFilter">
+                            <option value="ALL">Todos</option>
+                            <option value="PENDING">PENDING</option>
+                            <option value="IN_PROGRESS">IN_PROGRESS</option>
+                            <option value="COMPLETED">COMPLETED</option>
+                        </select>
+                    </label>
+                    <label class="toggle-row">
+                        <input id="overdueFilter" type="checkbox">
+                        <span>Solo vencidas</span>
+                    </label>
+                    <label>
+                        Orden
+                        <select id="sortFilter">
+                            <option value="UPDATED_DESC">Ultima actualizacion</option>
+                            <option value="DUE_ASC">Fecha limite ascendente</option>
+                            <option value="DUE_DESC">Fecha limite descendente</option>
+                            <option value="TITLE_ASC">Titulo A-Z</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="mini-summary">
+                    <div>
+                        <span>Visibles</span>
+                        <strong id="visibleTasks">0</strong>
+                    </div>
+                    <div>
+                        <span>Vencidas</span>
+                        <strong id="overdueTasks">0</strong>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <section class="panel tasks-panel">
+            <div class="panel-title-row">
+                <div>
+                    <p class="card-label">Task feed</p>
+                    <h2>Tablero de tareas</h2>
+                </div>
+                <div class="task-feed-meta">
+                    <span class="tiny-badge" id="taskFeedLabel">Sin datos</span>
+                </div>
+            </div>
+
+            <div id="tasksEmptyState" class="empty-state">
+                Inicia sesion para cargar y administrar tus tareas.
+            </div>
+            <div id="tasksList" class="task-board"></div>
+        </section>
+    </main>
+</div>
+
+<aside id="toast" class="toast" aria-live="polite"></aside>
+
+<script src="/config.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>
